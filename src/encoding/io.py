@@ -29,7 +29,16 @@ def parse_fasta(path: Path) -> pd.DataFrame:
         if not seq:
             return
 
-        acc = header.split()[0].strip()
+        token = header.split()[0].strip()
+        if token.startswith(("sp|", "tr|")) and token.count("|") >= 2:
+            acc = token.split("|", 2)[1].strip()
+        else:
+    # fallback: if still contains pipes, take the 2nd field if possible
+            if "|" in token:
+                parts = token.split("|")
+                acc = parts[1].strip() if len(parts) >= 2 and parts[1].strip() else token
+            else:
+                acc = token
         taxon_id = None
         for pat in _TAXON_PATTERNS:
             m = pat.search(header)
